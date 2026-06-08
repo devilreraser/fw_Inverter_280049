@@ -1,0 +1,13 @@
+# CCS Temporary
+Release/
+Debug/
+CPU1_FLASH/
+CPU1_RAM/
+
+
+# CCS Generated
+.config/
+
+# CCS Examples
+#adc_ex1_soc_epwm/
+#boostxl_afe031_f28004x

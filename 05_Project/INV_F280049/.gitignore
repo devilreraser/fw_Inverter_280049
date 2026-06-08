@@ -1,0 +1,31 @@
+# MATLAB / Simulink
+slprj/
+#*.asv
+#*.m~
+#*.mex*
+#*.slxc
+#*.mltbx
+#*.prj
+*.tmw
+*.dmr
+*.mat
+
+# CCS Generated
+CCS_Workspace/
+*.obj
+*.mk
+*.rsp
+html/
+defines.txt
+modelsources.txt
+*_ert_rtw/*.bat
+*_ert_rtw/*.map
+
+
+# Generated CCS Project and outputs
+CCS_Project/
+INV_F280049.hex
+INV_F280049.out
+
+# Whole rtw Generated Folder
+*_ert_rtw/

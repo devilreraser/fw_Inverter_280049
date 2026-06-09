@@ -31,6 +31,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>MCAL_F28379D</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>MCAL_F2800049C/f28004x_adc.c</name>
 			<type>1</type>
 			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_adc.c</locationURI>
@@ -41,6 +46,11 @@
 			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_codestartbranch.asm</locationURI>
 		</link>
 		<link>
+			<name>MCAL_F2800049C/f28004x_defaultisr.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_defaultisr.c</locationURI>
+		</link>
+		<link>
 			<name>MCAL_F2800049C/f28004x_device.h</name>
 			<type>1</type>
 			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/headers/include/f28004x_device.h</locationURI>
@@ -49,6 +59,96 @@
 			<name>MCAL_F2800049C/f28004x_examples.h</name>
 			<type>1</type>
 			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/include/f28004x_examples.h</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_globalvariabledefs.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/headers/source/f28004x_globalvariabledefs.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_gpio.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_gpio.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_headers_nonbios.cmd</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/headers/cmd/f28004x_headers_nonbios.cmd</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_piectrl.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_piectrl.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_pievect.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_pievect.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_sysctrl.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_sysctrl.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F2800049C/f28004x_usdelay.asm</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f28004x/common/source/f28004x_usdelay.asm</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_Adc.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_Adc.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_CodeStartBranch.asm</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_CodeStartBranch.asm</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_DefaultISR.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_DefaultISR.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_GlobalVariableDefs.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/headers/source/F2837xD_GlobalVariableDefs.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_Gpio.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_Gpio.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_Headers_nonBIOS_cpu1.cmd</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/headers/cmd/F2837xD_Headers_nonBIOS_cpu1.cmd</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_PieCtrl.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_PieCtrl.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_PieVect.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_PieVect.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_SysCtrl.c</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_SysCtrl.c</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_device.h</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/headers/include/F2837xD_device.h</locationURI>
+		</link>
+		<link>
+			<name>MCAL_F28379D/F2837xD_usDelay.asm</name>
+			<type>1</type>
+			<locationURI>COM_TI_C2000WARE_INSTALL_DIR/device_support/f2837xd/common/source/F2837xD_usDelay.asm</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

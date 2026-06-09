@@ -1,6 +1,7 @@
 # CCS Temporary
 Release/
 Debug/
+Debug_F[0-9][0-9][0-9][0-9][0-9]*/
 CPU1_FLASH/
 CPU1_RAM/
 

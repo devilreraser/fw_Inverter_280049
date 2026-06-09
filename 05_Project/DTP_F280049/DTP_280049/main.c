@@ -45,8 +45,8 @@ typedef struct
  * variables
 ***************************************************************************** */
 sErrorCounters_t sErrorCounters = {0};
-bool flRun = false;
-bool flHalt = false;
+volatile bool flRun = false;
+volatile bool flHalt = false;
 uint16_t adcResults[ADC_SAMPLES][ADC_CHANNELS_MAX] = {0};
 uint16_t adcIndexRd = 0;
 uint16_t adcIndexWr = 0;

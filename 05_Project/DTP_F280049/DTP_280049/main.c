@@ -51,6 +51,9 @@ uint16_t adcResults[ADC_SAMPLES][ADC_CHANNELS_MAX] = {0};
 uint16_t adcIndexRd = 0;
 uint16_t adcIndexWr = 0;
 uint16_t adcValues[ADC_CHANNELS_MAX] = {0};
+uint32_t adcISR_counter = 0;
+uint32_t pwmISR_counter = 0;
+uint32_t mainloopISR_counter = 0;
 
 /* *****************************************************************************
  * function prototypes
@@ -58,9 +61,11 @@ uint16_t adcValues[ADC_CHANNELS_MAX] = {0};
 void startPWM(void);
 void stopPWM(void);
 void config_ePWM_GPIO (void);
+void config_ePWMTriggerADC_GPIO (void);
 void initADC(void);
 void initEPWM(void);
 void initADCSOC(void);
+void adcResultProcess(void);
 __interrupt void adcA1ISR(void);
 __interrupt void epwm1_isr(void);
 
@@ -93,6 +98,8 @@ int main(void)
     EDIS;
 
     config_ePWM_GPIO(); /* setup PWM Pins */
+
+    config_ePWMTriggerADC_GPIO(); /* setup ADC Trigger Debug Pin */
 
 
     EALLOW;
@@ -139,7 +146,9 @@ int main(void)
             ESTOP0;
             flHalt = false;
         }
-
+        /* Process the ADC Result Outside ISR */
+        adcResultProcess();
+        mainloopISR_counter++;
     }
 	return 0;
 }
@@ -198,6 +207,26 @@ void config_ePWM_GPIO (void)
 }
 
 /* *****************************************************************************
+ * config_ePWMTriggerADC_GPIO - Function to configure Debug PWMTriggerADC GPIOs
+***************************************************************************** */
+void config_ePWMTriggerADC_GPIO (void)
+{
+  EALLOW;
+#if F28_2837xD
+  GpioCtrlRegs.GPEDIR.bit.GPIO146 = 1;      // 1=OUTput,  0=INput
+  GpioCtrlRegs.GPEPUD.bit.GPIO146 = 1;    // Disable pull-up on GPIO146 (EPWM1B)
+  GpioCtrlRegs.GPEGMUX2.bit.GPIO146 = 0;
+  GpioCtrlRegs.GPEMUX2.bit.GPIO146 = 0;  /* Configure GPIOGPIO146 as GPIO*/
+#else
+  GpioCtrlRegs.GPADIR.bit.GPIO1 = 1;      // 1=OUTput,  0=INput
+  GpioCtrlRegs.GPAPUD.bit.GPIO1 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
+  GpioCtrlRegs.GPAGMUX1.bit.GPIO1 = 0;
+  GpioCtrlRegs.GPAMUX1.bit.GPIO1 = 0;  /* Configure GPIOGPIO1 as GPIO*/
+#endif
+  EDIS;
+}
+
+/* *****************************************************************************
  * initADC - Function to configure and power up ADCA.
 ***************************************************************************** */
 void initADC(void)
@@ -225,7 +254,11 @@ void initEPWM(void)
 {
     EALLOW;
     EPwm1Regs.ETSEL.bit.SOCAEN = 0;         /* Disable SOC on A group */
-    EPwm1Regs.ETSEL.bit.SOCASEL = 4;        /* Select SOC on up-count */
+
+    //adc trigger cmpa or zero
+    //EPwm1Regs.ETSEL.bit.SOCASEL = 4;        /* Select SOC on up-count */
+    EPwm1Regs.ETSEL.bit.SOCASEL = ET_CTR_ZERO;
+
     EPwm1Regs.ETPS.bit.SOCAPRD = 1;         /* Generate pulse on 1st event */
     EPwm1Regs.CMPA.bit.CMPA = 0x0800;       /* Set compare A value to 2048 */
     EPwm1Regs.TBPRD = 0x1000;               /* Set period to 4096 counts */
@@ -309,10 +342,11 @@ void initADCSOC(void)
 }
 
 /* *****************************************************************************
- * adcResult - Read ADC Result
+ * adcResultProcess - Read ADC Result in Task/Main Loop
 ***************************************************************************** */
-void adcResult(void)
+void adcResultProcess(void)
 {
+
     bool flADCValuesProcessed = false;
 
     /* has data available - take latest and count skipped */
@@ -348,6 +382,9 @@ void adcResult(void)
 ***************************************************************************** */
 __interrupt void adcA1ISR(void)
 {
+    GpioDataRegs.GPESET.bit.GPIO146 = 1;
+    //GpioDataRegs.GPETOGGLE.bit.GPIO146 = 1;
+
     /* Add the latest result to the buffer */
     /* ADCRESULT0 is the result register of SOC0 */
     adcResults[adcIndexWr][ADC_USER_CHANNEL_0] = AdcaResultRegs.ADCRESULT0;
@@ -375,7 +412,11 @@ __interrupt void adcA1ISR(void)
         AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; /* clear INT1 flag */
     }
 
+    adcISR_counter++;
+
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1; /* Acknowledge the interrupt */
+
+    GpioDataRegs.GPECLEAR.bit.GPIO146 = 1;
 }
 
 /* *****************************************************************************
@@ -385,6 +426,8 @@ __interrupt void epwm1_isr(void)
 {
     /* Update the CMPA and CMPB values */
     //update_compare(&epwm1_info);
+
+    pwmISR_counter++;
 
     /* Clear INT flag for this timer */
     EPwm1Regs.ETCLR.bit.INT = 1;

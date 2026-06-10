@@ -382,8 +382,13 @@ void adcResultProcess(void)
 ***************************************************************************** */
 __interrupt void adcA1ISR(void)
 {
+#if F28_2837xD
     GpioDataRegs.GPESET.bit.GPIO146 = 1;
     //GpioDataRegs.GPETOGGLE.bit.GPIO146 = 1;
+#else
+    GpioDataRegs.GPASET.bit.GPIO1 = 1;
+    //GpioDataRegs.GPATOGGLE.bit.GPIO1 = 1;
+#endif
 
     /* Add the latest result to the buffer */
     /* ADCRESULT0 is the result register of SOC0 */
@@ -416,7 +421,11 @@ __interrupt void adcA1ISR(void)
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1; /* Acknowledge the interrupt */
 
+#if F28_2837xD
     GpioDataRegs.GPECLEAR.bit.GPIO146 = 1;
+#else
+    GpioDataRegs.GPACLEAR.bit.GPIO1 = 1;
+#endif
 }
 
 /* *****************************************************************************

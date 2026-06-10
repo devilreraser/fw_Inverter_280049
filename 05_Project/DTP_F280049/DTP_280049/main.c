@@ -57,10 +57,12 @@ uint16_t adcValues[ADC_CHANNELS_MAX] = {0};
 ***************************************************************************** */
 void startPWM(void);
 void stopPWM(void);
+void config_ePWM_GPIO (void);
 void initADC(void);
 void initEPWM(void);
 void initADCSOC(void);
 __interrupt void adcA1ISR(void);
+__interrupt void epwm1_isr(void);
 
 /* *****************************************************************************
  * functions
@@ -85,7 +87,18 @@ int main(void)
     /* Map ISR functions */
     EALLOW;
     PieVectTable.ADCA1_INT = &adcA1ISR;     /* ADCA interrupt 1 */
+    PieVectTable.EPWM1_INT = &epwm1_isr;
+    //PieVectTable.EPWM2_INT = &epwm2_isr;
+    //PieVectTable.EPWM3_INT = &epwm3_isr;
     EDIS;
+
+    config_ePWM_GPIO(); /* setup PWM Pins */
+
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;
+    EDIS;
+
 
     initADC();          /*  Configure the ADC and power it up */
     initEPWM();         /* Configure the ePWM */
@@ -93,16 +106,25 @@ int main(void)
 
     /* Enable global Interrupts and higher priority real-time events */
     IER |= M_INT1;      /* Enable group 1 interrupts */
-    EINT;               /* Enable Global interrupt INTM */
-    ERTM;               /* Enable Global real-time interrupt DBGM */
-
+    //
+    // Enable CPU INT3 which is connected to EPWM1-3 INT:
+    //
+    IER |= M_INT3;
     /* Enable PIE interrupt */
     PieCtrlRegs.PIEIER1.bit.INTx1 = 1;
+
+    /* Enable EPWM INTn in the PIE: Group 3 interrupt 1(-3) */
+    PieCtrlRegs.PIEIER3.bit.INTx1 = 1;
+    //PieCtrlRegs.PIEIER3.bit.INTx2 = 1;
+    //PieCtrlRegs.PIEIER3.bit.INTx3 = 1;
 
     /* Sync ePWM */
     EALLOW;
     CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;
     EDIS;
+
+    EINT;               /* Enable Global interrupt INTM */
+    ERTM;               /* Enable Global real-time interrupt DBGM */
 
     startPWM();
 
@@ -130,7 +152,7 @@ void startPWM(void)
     /* Start ePWM */
     EALLOW;
     EPwm1Regs.ETSEL.bit.SOCAEN = 1;    /* Enable SOCA */
-    EPwm1Regs.TBCTL.bit.CTRMODE = 0;   /* Un-freeze, and enter up count mode */
+    EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN; // Un-freeze & Count up & down
     EDIS;
 }
 
@@ -144,6 +166,35 @@ void stopPWM(void)
     EPwm1Regs.ETSEL.bit.SOCAEN = 0;    /* Disable SOCA */
     EPwm1Regs.TBCTL.bit.CTRMODE = 3;   /* Freeze counter */
     EDIS;
+}
+
+/* *****************************************************************************
+ * config_ePWM_GPIO - Function to configure PWM GPIOs
+***************************************************************************** */
+void config_ePWM_GPIO (void)
+{
+  EALLOW;
+
+  /*-- Configure pin assignments for ePWM1 --*/
+#if F28_2837xD
+  GpioCtrlRegs.GPEPUD.bit.GPIO145 = 1;    // Disable pull-up on GPIO145 (EPWM1A)
+  //GpioCtrlRegs.GPEPUD.bit.GPIO146 = 1;    // Disable pull-up on GPIO146 (EPWM1B)
+  GpioCtrlRegs.GPEGMUX2.bit.GPIO145 = 0;
+  GpioCtrlRegs.GPEMUX2.bit.GPIO145 = 1;  /* Configure GPIOGPIO145 as EPWM1A*/
+  //GpioCtrlRegs.GPEGMUX2.bit.GPIO146 = 0;
+  //GpioCtrlRegs.GPEMUX2.bit.GPIO146 = 1;  /* Configure GPIOGPIO146 as EPWM1B*/
+#else
+  GpioCtrlRegs.GPAPUD.bit.GPIO0 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
+  //GpioCtrlRegs.GPAPUD.bit.GPIO1 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
+  GpioCtrlRegs.GPAGMUX1.bit.GPIO0 = 0;
+  GpioCtrlRegs.GPAMUX1.bit.GPIO0 = 1;  /* Configure GPIOGPIO0 as EPWM1A*/
+  //GpioCtrlRegs.GPAGMUX1.bit.GPIO1 = 0;
+  //GpioCtrlRegs.GPAMUX1.bit.GPIO1 = 1;  /* Configure GPIOGPIO1 as EPWM1B*/
+#endif
+
+  /*--- Configure pin assignments for TZn ---*/
+  //InputXbarRegs.INPUT1SELECT = 26;
+  EDIS;
 }
 
 /* *****************************************************************************
@@ -179,6 +230,45 @@ void initEPWM(void)
     EPwm1Regs.CMPA.bit.CMPA = 0x0800;       /* Set compare A value to 2048 */
     EPwm1Regs.TBPRD = 0x1000;               /* Set period to 4096 counts */
     EPwm1Regs.TBCTL.bit.CTRMODE = 3;        /* Freeze counter */
+    EPwm1Regs.TBPHS.bit.TBPHS = 0x0000;        // Phase is 0
+    EPwm1Regs.TBCTR = 0x0000;                  // Clear counter
+
+    //
+    // Setup counter mode
+    //
+    EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UPDOWN; // Count up and down
+    EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;        // Disable phase loading
+    EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;       // Clock ratio to SYSCLKOUT
+    EPwm1Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+
+    //
+    // Setup shadowing
+    //
+    EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    //EPwm1Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+    EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO; // Load on Zero
+    //EPwm1Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+
+    //
+    // Set actions
+    //
+    EPwm1Regs.AQCTLA.bit.CAU = AQ_SET;            // Set PWM1A on event A, up
+                                                  // count
+    EPwm1Regs.AQCTLA.bit.CAD = AQ_CLEAR;          // Clear PWM1A on event A,
+                                                  // down count
+
+    //EPwm1Regs.AQCTLB.bit.CBU = AQ_SET;            // Set PWM1B on event B, up
+                                                  // count
+    //EPwm1Regs.AQCTLB.bit.CBD = AQ_CLEAR;          // Clear PWM1B on event B,
+                                                  // down count
+    //
+    // Interrupt where we will change the Compare Values
+    //
+    EPwm1Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;     // Select INT on Zero event
+    EPwm1Regs.ETSEL.bit.INTEN = 1;                // Enable INT
+    EPwm1Regs.ETPS.bit.INTPRD = ET_3RD;           // Generate INT on 3rd event
+
+
     EDIS;
 }
 
@@ -286,6 +376,21 @@ __interrupt void adcA1ISR(void)
     }
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1; /* Acknowledge the interrupt */
+}
+
+/* *****************************************************************************
+ * epwm1_isr - EPWM1 ISR
+***************************************************************************** */
+__interrupt void epwm1_isr(void)
+{
+    /* Update the CMPA and CMPB values */
+    //update_compare(&epwm1_info);
+
+    /* Clear INT flag for this timer */
+    EPwm1Regs.ETCLR.bit.INT = 1;
+
+    /* Acknowledge this interrupt to receive more interrupts from group 3 */
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 }
 
 /* *****************************************************************************
